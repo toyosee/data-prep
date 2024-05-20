@@ -4,7 +4,7 @@ import DataUpload from './DataUpload';
 function App() {
     return (
         <div className="my-4">
-            <h1 className='text-center text-muted'><strong>Data Prep</strong></h1>
+            <h1 className='text-center text-muted'><strong>Clean IT</strong></h1>
             <DataUpload />
         </div>
     );
