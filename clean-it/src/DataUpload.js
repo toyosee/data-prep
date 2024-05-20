@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx'; // Import xlsx library
+import * as XLSX from 'xlsx';
 import { Container, Form, Button, Alert, Card, Table, Spinner } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileUpload, faFileCsv, faFileCode, faFileCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+
 
 function DataUpload() {
     const [file, setFile] = useState(null);
@@ -31,14 +34,14 @@ function DataUpload() {
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                console.log('Parsed Excel data:', jsonData); // Debugging line
+                console.log('Parsed Excel data:', jsonData);
                 setInitialRowCount(jsonData.length);
                 try {
                     const response = await axios.post('http://127.0.0.1:5000/clean', {
                         data: jsonData,
-                        threshold: threshold
+                        threshold: threshold,
                     });
-                    console.log('Cleaned data response:', response.data); // Debugging line
+                    console.log('Cleaned data response:', response.data);
                     if (response.data.error) {
                         throw new Error(response.data.error);
                     }
@@ -65,7 +68,6 @@ function DataUpload() {
         }
 
         if (format === 'csv') {
-            // Convert cleaned data to CSV format
             const csvContent = 'data:text/csv;charset=utf-8,' + cleanedData.map(row => Object.values(row).join(',')).join('\n');
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement('a');
@@ -74,7 +76,6 @@ function DataUpload() {
             document.body.appendChild(link);
             link.click();
         } else if (format === 'json') {
-            // Convert cleaned data to JSON format
             const jsonContent = JSON.stringify(cleanedData, null, 2);
             const blob = new Blob([jsonContent], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -88,9 +89,13 @@ function DataUpload() {
 
     return (
         <Container>
-            <Card className="my-4">
+            <Card className="my-4" border='secondary'>
                 <Card.Body>
-                    <Card.Title><strong className='bold text-muted'>Automated Data Cleaning Tool</strong></Card.Title>
+                    <Card.Title>
+                        <strong className="bold text-muted">
+                            <FontAwesomeIcon icon={faFileCircleExclamation} /> Automated Data Cleaning Tool
+                        </strong>
+                    </Card.Title>
                     {error && <Alert variant="danger">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
                         <Form.Group controlId="formFile" className="mb-3">
@@ -108,13 +113,13 @@ function DataUpload() {
                                 <option value={100}>100%</option>
                             </Form.Control>
                         </Form.Group>
-                        <Button variant="primary" type="submit" disabled={loading}>
+                        <Button variant="primary" size='lg' type="submit" disabled={loading}>
                             {loading ? (
                                 <>
                                     <Spinner animation="border" size="sm" /> Processing...
                                 </>
                             ) : (
-                                'Upload and Clean Data'
+                                <><FontAwesomeIcon icon={faFileUpload} /> Upload and Clean Data </>
                             )}
                         </Button>
                     </Form>
@@ -129,14 +134,24 @@ function DataUpload() {
                 </div>
             )}
 
-            {cleanedData.length > 0 && (
+            {cleanedData.length > 0 ? (
                 <Card className="my-4">
                     <Card.Body>
-                        <Card.Title><strong className='bold text-muted'>Cleaned Data</strong></Card.Title>
-                        <p><strong className='text-muted'>Initial Row Count: {initialRowCount}</strong></p>
-                        <p><strong className='text-muted'>Cleaned Row Count: {cleanedRowCount}</strong></p>
-                        <Button variant="success" onClick={() => exportData('csv')}>Export as CSV</Button>
-                        <Button variant="secondary mx-3" onClick={() => exportData('json')}>Export as JSON</Button>
+                        <Card.Title>
+                            <strong className="bold text-muted">Cleaned Data</strong>
+                        </Card.Title>
+                        <p>
+                            <strong className="text-muted">Initial Row Count: {initialRowCount}</strong>
+                        </p>
+                        <p>
+                            <strong className="text-muted">Cleaned Row Count: {cleanedRowCount}</strong>
+                        </p>
+                        <Button variant="success" onClick={() => exportData('csv')}>
+                            <FontAwesomeIcon icon={faFileCsv} /> Export as CSV
+                        </Button>
+                        <Button variant="secondary mx-3" onClick={() => exportData('json')}>
+                            <FontAwesomeIcon icon={faFileCode} /> Export as JSON
+                        </Button>
                         <Table striped bordered hover>
                             <thead>
                                 <tr>
@@ -155,6 +170,13 @@ function DataUpload() {
                                 ))}
                             </tbody>
                         </Table>
+                    </Card.Body>
+                </Card>
+            ):(
+                <Card className="my-4">
+                    <Card.Body>
+                        <Card.Title>No Data to Display</Card.Title>
+                        <p>There are no cleaned data rows available.</p>
                     </Card.Body>
                 </Card>
             )}
