@@ -39,12 +39,15 @@ function DataUpload() {
                         threshold: threshold
                     });
                     console.log('Cleaned data response:', response.data); // Debugging line
-                    setCleanedData(response.data);
-                    setCleanedRowCount(response.data.length);
+                    if (response.data.error) {
+                        throw new Error(response.data.error);
+                    }
+                    setCleanedData(response.data.cleanedData);
+                    setCleanedRowCount(response.data.cleanedRowCount);
                     setError('');
                 } catch (error) {
                     console.error('Error cleaning data', error);
-                    setError('Failed to clean data.');
+                    setError(`Failed to clean data: ${error.message}`);
                 } finally {
                     setLoading(false);
                 }
